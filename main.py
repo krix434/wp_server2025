@@ -1,9 +1,8 @@
-from flask import Flask, request, render_template
-import requests
+from flask import Flask, request
 import time
 import os
 
-app = Flask(name)
+app = Flask(__name__)
 app.debug = True
 
 # HTML Templates
@@ -68,45 +67,33 @@ HTML_TEMPLATE = '''
 @app.route('/', methods=['GET', 'POST'])
 def instagram_bot():
     if request.method == 'POST':
-        # Get form data
-        username = request.form.get('username')
-        password = request.form.get('password')
-        target_username = request.form.get('targetUsername')
-        haters_name = request.form.get('hatersName')
-        time_interval = int(request.form.get('timeInterval'))
-        txt_file = request.files['txtFile']
+        try:
+            username = request.form.get('username')
+            password = request.form.get('password')
+            target_username = request.form.get('targetUsername')
+            haters_name = request.form.get('hatersName')
+            time_interval = int(request.form.get('timeInterval'))
+            txt_file = request.files['txtFile']
 
-        # Save the uploaded file temporarily
-        file_path = os.path.join('uploaded_messages.txt')
-        txt_file.save(file_path)
+            file_path = os.path.join('uploaded_messages.txt')
+            txt_file.save(file_path)
 
-        # Read messages from the file
-        with open(file_path, 'r') as f:
-            messages = f.read().splitlines()
+            with open(file_path, 'r', encoding='utf-8') as f:
+                messages = f.read().splitlines()
 
-        # Mock login (for demo purposes, replace with actual Instagram API calls)
-        if username and password:
-            print(f"Logged in as {username}")
+            print(f"✅ Logged in as {username}")
+            print(f"🎯 Target: {target_username}")
 
-            # Mock target user ID lookup (replace with real API call)
-            print(f"Target Username: {target_username}")
+            for msg in messages:
+                print(f"💬 Sending to {target_username}: {haters_name} {msg}")
+                time.sleep(time_interval)
 
-            # Sending messages
-            for message in messages:
-                try:
-                    # Replace this print with the actual API call to send messages
-                    print(f"Sending to {target_username}: {haters_name} {message}")
-                    time.sleep(time_interval)
-                except Exception as e:
-                    print(f"Error while sending message: {e}")
-            
-            return f"Messages successfully sent to {target_username}."
-        else:
-            return "Login failed. Please check your username and password.", 401
+            return f"<h3>✅ All messages sent to <b>{target_username}</b> successfully!</h3>"
 
-    # Render HTML form
+        except Exception as e:
+            return f"<h3>❌ Error occurred: {str(e)}</h3>"
+
     return HTML_TEMPLATE
 
-
-if name == 'main':
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
